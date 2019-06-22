@@ -28,11 +28,20 @@ beginning = NewHijara $ fromList 4 4 [fromList 2 2 [Empty | x <- [1..4]] | _ <- 
 
 -- score :: HijaraGame -> [(HijaraPlayer, Int)]
 
-showGame :: HijaraGame -> String
-showGame hijara = 
 
-showConsole :: HijaraGame -> IO ()
-showConsole hijara = putStr showGame hijara
+
+  showGame :: HijaraGame -> String
+  showGame hijara =
+    where
+      algo = hLines $  fromList 4 4 [fromList 2 2 [Empty | x <- [1..4]] | _ <- [1..16]]
+      lista = [(map hLines x) | x <- algo]
+-- showConsole :: HijaraGame -> IO ()
+-- showConsole hijara = putStr showGame hijara
 -- showAction :: HijaraAction -> String
 
 -- readAction :: String -> HijaraAction
+
+
+hLines sud = [toList (getRow i sud) | i <- [1..nrows sud ]]
+
+vLines sud = [toList (getCol i sud) | i <- [1..ncols sud ]]
