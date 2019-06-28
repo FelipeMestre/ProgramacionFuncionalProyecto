@@ -14,13 +14,34 @@ instance Show Casilla where
   show (Empty) = "x"
 
 
-
 beginning :: HijaraGame
-beginning = NewHijara $ fromList 4 4 [fromList 2 2 [Empty | x <- [1..4]] | _ <- [1..16]]
+beginning = NewHijara $ fromList 4 4 [fromList 2 2 [Empty | x <- [1..4]] | _ <- [1..16]]  
 
--- activePlayer :: HijaraGame -> HijaraPlayer 
+showGame :: HijaraGame -> String
+showGame (NewHijara matrix) = foldr1 (++) (map show (pasarALista primerasFilas))
+    where
+      algo = hLines matrix
+      lista = [(map hLines x) | x <- algo]
+      primerasFilas = [(((lista !! y) !! x) !! z) | y <- [0..3], z <-[0..1], x <- [0..3] ]  
 
--- actions :: HijaraGame -> [(HijaraPlayer, [HijaraAction])] 
+pasarALista :: [[Casilla]] -> [Casilla]
+pasarALista [] = []
+pasarALista lista = cabeza ++ (pasarALista cola) 
+            where
+              cabeza = (foldr1 (++) (take 4 lista))
+              cola = (drop 4 lista)
+
+
+activePlayer :: HijaraGame -> HijaraPlayer
+activePlayer (NewHijara matrix) = if numeroB >= numeroY then (BluePlayer) else (YellowPlayer) 
+                      where
+                        tablero = showGame (NewHijara matrix)
+                        numeroY = length (filter (\x -> x == 'y') tablero)
+                        numeroB = length (filter (\x -> x == 'y') tablero)
+
+
+actions :: HijaraGame -> [(HijaraPlayer, [HijaraAction])]
+
 
 -- next :: HijaraGame -> (HijaraPlayer, HijaraAction) -> HijaraGame
 
@@ -30,11 +51,8 @@ beginning = NewHijara $ fromList 4 4 [fromList 2 2 [Empty | x <- [1..4]] | _ <- 
 
 
 
-  showGame :: HijaraGame -> String
-  showGame hijara =
-    where
-      algo = hLines $  fromList 4 4 [fromList 2 2 [Empty | x <- [1..4]] | _ <- [1..16]]
-      lista = [(map hLines x) | x <- algo]
+
+       
 -- showConsole :: HijaraGame -> IO ()
 -- showConsole hijara = putStr showGame hijara
 -- showAction :: HijaraAction -> String
