@@ -1,4 +1,4 @@
-import Data.Matrix (Matrix, getCol, getRow, ncols, nrows, toList, toLists, fromLists, fromList, submatrix, getElem)
+import Data.Matrix (Matrix, getCol, getRow, ncols, nrows, toList, toLists, fromLists, fromList, submatrix, getElem, setElem)
 import Data.Vector (toList)
 import Data.List (sort, elemIndex)
 import Data.Maybe (fromJust)
@@ -9,6 +9,11 @@ data Casilla = Blue | Yellow | Empty deriving (Eq)
 -- EL primer int indica la fila de la seccion, el segundo la columna de la seccion y el tercero el valor de la casilla posible
 -- No existe una accion si no hay casilla posible 
 data HijaraAction = NewAction Int Int Int deriving (Eq, Show)
+
+hLines sud = [Data.Vector.toList (getRow i sud) | i <- [1..nrows sud ]]
+
+vLines sud = [Data.Vector.toList (getCol i sud) | i <- [1..ncols sud ]]
+
 
 showHijaraPretty:: HijaraGame -> IO ()
 showHijaraPretty (NewHijara m) = putStr (concat [ x ++ "\n" ++ y ++ "\n\n" | (x,y) <- zip listFilasParesToString listFilasImparesToString ])
@@ -62,15 +67,34 @@ actions (NewHijara higa) = [(actPlayer, listaMovimientos), (noActPlayer, [])]
                           noActPlayer = if (activePlayer (NewHijara higa) == BluePlayer) then YellowPlayer else BluePlayer
                           filas = hLines higa
                           -- En la siguiente linea "x" va a iterar con cada fila, "y" solo indica el numero de la fila y "z" itera las columnas el numero de la columna
-                          listaMovimientos = [ NewAction y z (fromJust (elemIndex Empty (Data.Matrix.toList (x !! z)))) | (x,y) <- zip filas [0..3], z <- [0..3], Empty `elem` (Data.Matrix.toList (x !! z)) ]
+                          listaMovimientos = [ NewAction y z ((fromJust (elemIndex Empty (Data.Matrix.toList (x !! z)))) + 1) | (x,y) <- zip filas [0..3], z <- [0..3], Empty `elem` (Data.Matrix.toList (x !! z)) ]
 
--- next :: HijaraGame -> (HijaraPlayer, HijaraAction) -> HijaraGame
+next :: HijaraGame -> (HijaraPlayer, HijaraAction) -> HijaraGame
+next (NewHijara hija) (player, NewAction fila columna valor)
+  | not (player == (activePlayer (NewHijara hija))) = error "El jugador no es le jugador activo"
+  | not ((NewAction fila columna valor) `elem` posiblePlayerActions) = error "No se puede efectuar la accion ingresada"
+  | otherwise = NewHijara (setElem newSection (fila, columna) hija)
+  where
+    posiblePlayerActions = if (fst ((actions (NewHijara hija) !! 0)) == player) 
+      then snd ((actions (NewHijara hija) !! 0))
+      else snd ((actions (NewHijara hija) !! 1))
+    casillaDelJugador = if (player == YellowPlayer) then Yellow else Blue
+    oldListOfSeccion = Data.Matrix.toList (((hLines hija) !! fila) !! columna) 
+    newSection = (fromList 2 2 [ if (valor == y) then casillaDelJugador else x | (x,y) <- zip oldListOfSeccion [1..] ])
 
--- result :: HijaraGame -> [(HijaraPlayer, Int)]
+result :: HijaraGame -> [(HijaraPlayer, Int)]
+result b = [] --TODO
 
--- score :: HijaraGame -> [(HijaraPlayer, Int)]
+score :: HijaraGame -> [(HijaraPlayer, Int)]
+score a = [] --TODO
+
+showAction :: HijaraAction -> String
+showAction a = show a --TODO
+
+readAction :: String -> HijaraAction
+readAction a = NewAction 3 3 3 --TODO
+
+players :: [HijaraPlayer]
+players = [] --TODO
 
 
-hLines sud = [Data.Vector.toList (getRow i sud) | i <- [1..nrows sud ]]
-
-vLines sud = [Data.Vector.toList (getCol i sud) | i <- [1..ncols sud ]]
