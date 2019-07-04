@@ -6,6 +6,7 @@ data HijaraPlayer = BluePlayer | YellowPlayer deriving (Eq, Show, Enum)
 data HijaraGame = NewHijara (Matrix (Matrix Casilla))
 data Casilla = Blue | Yellow | Empty deriving (Eq)
 
+
 -- EL primer int indica la fila de la seccion, el segundo la columna de la seccion y el tercero el valor de la casilla posible
 -- No existe una accion si no hay casilla posible
 data HijaraAction = NewAction Int Int Int deriving (Eq, Show)
@@ -83,7 +84,14 @@ next (NewHijara hija) (player, NewAction fila columna valor)
     newSection = (fromList 2 2 [ if (valor == y) then casillaDelJugador else x | (x,y) <- zip oldListOfSeccion [1..] ])
 
 result :: HijaraGame -> [(HijaraPlayer, Int)]
-result b = [] --TODO
+result b 
+      |isFinished b = if scoreP1 > scoreP2 then [(p1,1),(p2,-1)] else if scoreP1 < scoreP2 then [(p1,-1),(p2,1)] else []
+      |otherwise = []
+      where
+        p1 = fst ((score b) !! 0)
+        p2 = fst ((score b) !! 0)
+        scoreP1 = snd ((score b) !! 0)
+        scoreP2 = snd ((score b) !! 1)
 
 score :: HijaraGame -> [(HijaraPlayer, Int)]
 score a = [] --TODO
@@ -97,4 +105,8 @@ readAction a = NewAction 3 3 3 --TODO
 players :: [HijaraPlayer]
 players = [] --TODO
 
-
+isFinished :: HijaraGame -> Bool
+isFinished a = (p1 == []) && (p2 == [])
+  where 
+    p1 = snd ((actions a) !! 0)
+    p2 = snd ((actions a) !! 1)
