@@ -41,9 +41,9 @@ beginning = NewHijara $ fromList 4 4 [fromList 2 2 [Empty | x <- [1..4]] | _ <- 
 showGame :: HijaraGame -> String
 showGame (NewHijara matrix) = foldr1 (++) (map show (pasarALista primerasFilas ))
     where
-      algo = hLines matrix
-      lista = [(map hLines x) | x <- algo]
-      primerasFilas = [(((lista !! y) !! x) !! z) | y <- [0..3], z <-[0..1], x <- [0..3] ]
+      horizontalesDeTablero = hLines matrix
+      horizontalesDeMatriz = [(map hLines x) | x <- horizontalesDeTablero]
+      primerasFilas = [(((horizontalesDeMatriz !! y) !! x) !! z) | y <- [0..3], z <-[0..1], x <- [0..3] ]
 
 pasarALista :: [[Casilla]] -> [Casilla]
 pasarALista [] = []
@@ -68,11 +68,11 @@ actions (NewHijara higa) = [(actPlayer, listaMovimientos), (noActPlayer, [])]
                           noActPlayer = if (activePlayer (NewHijara higa) == BluePlayer) then YellowPlayer else BluePlayer
                           filas = hLines higa
                           -- En la siguiente linea "x" va a iterar con cada fila, "y" solo indica el numero de la fila y "z" itera las columnas el numero de la columna
-                          listaMovimientos = [ NewAction y z ((fromJust (elemIndex Empty (Data.Matrix.toList (x !! z)))) + 1) | (x,y) <- zip filas [0..3], z <- [0..3], Empty `elem` (Data.Matrix.toList (x !! z)) ]
+                          listaMovimientos = [NewAction y z ((fromJust (elemIndex Empty (Data.Matrix.toList (x !! (z-1))))) + 1) | (x,y) <- zip filas [1..4], z <- [1..4], Empty `elem` (Data.Matrix.toList (x !! (z-1))) ]
 
 next :: HijaraGame -> (HijaraPlayer, HijaraAction) -> HijaraGame
 next (NewHijara hija) (player, NewAction fila columna valor)
-  | player /= (activePlayer (NewHijara hija)) = throw (error "El jugador no es le jugador activo")
+  | player /= (activePlayer (NewHijara hija)) = (error "El jugador no es le jugador activo")
   | not ((NewAction fila columna valor) `elem` posiblePlayerActions) = error "No se puede efectuar la accion ingresada"
   | otherwise = NewHijara (setElem newSection (fila, columna) hija)
   where
@@ -94,7 +94,7 @@ result b
         scoreP2 = snd ((score b) !! 1)
 
 score :: HijaraGame -> [(HijaraPlayer, Int)]
-score a = [] --TODO
+score tableroHijara = []
 
 showAction :: HijaraAction -> String
 showAction a = show a --TODO
