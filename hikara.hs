@@ -68,20 +68,27 @@ actions (NewHijara higa) = [(actPlayer, listaMovimientos), (noActPlayer, [])]
                           noActPlayer = if (activePlayer (NewHijara higa) == BluePlayer) then YellowPlayer else BluePlayer
                           filas = hLines higa
                           -- En la siguiente linea "x" va a iterar con cada fila, "y" solo indica el numero de la fila y "z" itera las columnas el numero de la columna
-                          listaMovimientos = [NewAction y z ((fromJust (elemIndex Empty (Data.Matrix.toList (x !! (z-1))))) + 1) | (x,y) <- zip filas [1..4], z <- [1..4], Empty `elem` (Data.Matrix.toList (x !! (z-1))) ]
+                          listaMovimientos = [ NewAction y z ((fromJust (elemIndex Empty (Data.Matrix.toList (x !! (z-1))))) + 1) | (x,y) <- zip filas [1..4], z <- [1..4], Empty `elem` (Data.Matrix.toList (x !! (z-1))) ]
 
 next :: HijaraGame -> (HijaraPlayer, HijaraAction) -> HijaraGame
 next (NewHijara hija) (player, NewAction fila columna valor)
-  | player /= (activePlayer (NewHijara hija)) = (error "El jugador no es le jugador activo")
+  | player /= (activePlayer (NewHijara hija)) =  (error "El jugador no es el jugador activo")
   | not ((NewAction fila columna valor) `elem` posiblePlayerActions) = error "No se puede efectuar la accion ingresada"
-  | otherwise = NewHijara (setElem newSection (fila, columna) hija)
+  | otherwise = NewHijara (setElem nuevaSeccion (fila, columna) hija   )
   where
     posiblePlayerActions = if (fst ((actions (NewHijara hija) !! 0)) == player)
       then snd ((actions (NewHijara hija) !! 0))
       else snd ((actions (NewHijara hija) !! 1))
     casillaDelJugador = if (player == YellowPlayer) then Yellow else Blue
-    oldListOfSeccion = Data.Matrix.toList (((hLines hija) !! fila) !! columna)
-    newSection = (fromList 2 2 [ if (valor == y) then casillaDelJugador else x | (x,y) <- zip oldListOfSeccion [1..] ])
+    seccion = getElem fila columna hija --Saca la seccion del tablero
+    casillaUno = (1,1) 
+    casillaDos = (1,2)
+    casillaTres = (2,1)
+    casillaCuatro = (2,2) --Se fija la coordenada de la casilla en la subMatriz
+    casilla = if valor == 1 then casillaUno else if valor == 2 then casillaDos else if valor == 3 then casillaTres else casillaCuatro
+    nuevaSeccion = setElem  casillaDelJugador casilla seccion  --Crea la nueva seccion para ponerla en el tablero
+    -- oldListOfSeccion = Data.Matrix.toList (((hLines hija) !! fila) !! columna)
+    -- newSection = (fromList 2 2 [ if (valor == y) then casillaDelJugador else x | (x,y) <- zip oldListOfSeccion [1..]])
 
 result :: HijaraGame -> [(HijaraPlayer, Int)]
 result b 
@@ -95,6 +102,8 @@ result b
 
 score :: HijaraGame -> [(HijaraPlayer, Int)]
 score tableroHijara = []
+--           tablero = (showGame tableroHijara)
+--           horizontales = [take x  ++ drop n ]
 
 showAction :: HijaraAction -> String
 showAction a = show a --TODO
