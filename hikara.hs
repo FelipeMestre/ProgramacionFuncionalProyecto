@@ -7,7 +7,7 @@ data HijaraGame = NewHijara (Matrix (Matrix Casilla))
 data Casilla = Blue | Yellow | Empty deriving (Eq)
 
 -- EL primer int indica la fila de la seccion, el segundo la columna de la seccion y el tercero el valor de la casilla posible
--- No existe una accion si no hay casilla posible 
+-- No existe una accion si no hay casilla posible
 data HijaraAction = NewAction Int Int Int deriving (Eq, Show)
 
 hLines sud = [Data.Vector.toList (getRow i sud) | i <- [1..nrows sud ]]
@@ -25,7 +25,7 @@ showHijaraPretty (NewHijara m) = putStr (concat [ x ++ "\n" ++ y ++ "\n\n" | (x,
 showLine :: Bool -> [Casilla] -> String
 showLine top line = "|" ++ value1 ++ " " ++ value2 ++ "|"
   where
-    value1 = if ((line !! 0) == Empty) then (if top then "1" else "3") else show (line !! 0) 
+    value1 = if ((line !! 0) == Empty) then (if top then "1" else "3") else show (line !! 0)
     value2 = if ((line !! 1) == Empty) then (if top then "2" else "4") else show (line !! 1)
 
 instance Show Casilla where
@@ -35,25 +35,25 @@ instance Show Casilla where
 
 
 beginning :: HijaraGame
-beginning = NewHijara $ fromList 4 4 [fromList 2 2 [Empty | x <- [1..4]] | _ <- [1..16]]  
+beginning = NewHijara $ fromList 4 4 [fromList 2 2 [Empty | x <- [1..4]] | _ <- [1..16]]
 
 showGame :: HijaraGame -> String
 showGame (NewHijara matrix) = foldr1 (++) (map show (pasarALista primerasFilas ))
     where
       algo = hLines matrix
       lista = [(map hLines x) | x <- algo]
-      primerasFilas = [(((lista !! y) !! x) !! z) | y <- [0..3], z <-[0..1], x <- [0..3] ]  
+      primerasFilas = [(((lista !! y) !! x) !! z) | y <- [0..3], z <-[0..1], x <- [0..3] ]
 
 pasarALista :: [[Casilla]] -> [Casilla]
 pasarALista [] = []
-pasarALista lista = cabeza ++ (pasarALista cola) 
+pasarALista lista = cabeza ++ (pasarALista cola)
             where
               cabeza = (foldr1 (++) (take 4 lista))
               cola = (drop 4 lista)
 
 
 activePlayer :: HijaraGame -> HijaraPlayer
-activePlayer (NewHijara matrix) = if numeroB >= numeroY then (BluePlayer) else (YellowPlayer) 
+activePlayer (NewHijara matrix) = if numeroB <= numeroY then (BluePlayer) else (YellowPlayer)
                       where
                         tablero = showGame (NewHijara matrix)
                         numeroY = length (filter (\x -> x == 'y') tablero)
@@ -71,15 +71,15 @@ actions (NewHijara higa) = [(actPlayer, listaMovimientos), (noActPlayer, [])]
 
 next :: HijaraGame -> (HijaraPlayer, HijaraAction) -> HijaraGame
 next (NewHijara hija) (player, NewAction fila columna valor)
-  | not (player == (activePlayer (NewHijara hija))) = error "El jugador no es le jugador activo"
+  | player /= (activePlayer (NewHijara hija)) = throw (error "El jugador no es le jugador activo")
   | not ((NewAction fila columna valor) `elem` posiblePlayerActions) = error "No se puede efectuar la accion ingresada"
   | otherwise = NewHijara (setElem newSection (fila, columna) hija)
   where
-    posiblePlayerActions = if (fst ((actions (NewHijara hija) !! 0)) == player) 
+    posiblePlayerActions = if (fst ((actions (NewHijara hija) !! 0)) == player)
       then snd ((actions (NewHijara hija) !! 0))
       else snd ((actions (NewHijara hija) !! 1))
     casillaDelJugador = if (player == YellowPlayer) then Yellow else Blue
-    oldListOfSeccion = Data.Matrix.toList (((hLines hija) !! fila) !! columna) 
+    oldListOfSeccion = Data.Matrix.toList (((hLines hija) !! fila) !! columna)
     newSection = (fromList 2 2 [ if (valor == y) then casillaDelJugador else x | (x,y) <- zip oldListOfSeccion [1..] ])
 
 result :: HijaraGame -> [(HijaraPlayer, Int)]
