@@ -1,67 +1,55 @@
+{- Hijara ------------------------------------------------------------------------------------------
+ 
+Plantilla de código para el proyecto del curso de 2019 de _Programación Funcional_ para las carreras 
+de Ingeniería y Licenciatura en Informática de la FIT (UCU).
+Los docentes no garantizan que este código esté libre de errores. De encontrar problemas, por favor
+reportarlos a la cátedra.
+
+Por Leonardo Val.
+-}
+module Hijara where
+
+import Data.Maybe (fromJust, listToMaybe)
 import Data.Matrix (Matrix, getCol, getRow, ncols, nrows, toList, toLists, fromLists, fromList, submatrix, getElem, setElem)
 import Data.Vector (toList)
 import Data.List (sort, elemIndex)
 import Data.Maybe (fromJust)
 import Data.Char
+import System.Random
+
+{- Es posible que el paquete System.Random no esté disponible si se instaló el core de la Haskell 
+Platform en el sistema. Para instalarlo, ejecutar los siguientes comandos:
+
+> cabal update
+> cabal install random
+
+La herramienta `cabal` es un manejador de paquetes usado por la plataforma Haskell. Debería estar 
+disponible junto con el `ghci`.
+
+-}
+
+{-- Lógica de juego --------------------------------------------------------------------------------
+
+Funciones de marca sin ninguna implementación útil. Reemplazar por el código apropiado o por imports
+a los módulos necesarios.
+-}
+
 data HijaraPlayer = BluePlayer | YellowPlayer deriving (Eq, Show, Enum)
 data HijaraGame = NewHijara (Matrix (Matrix Casilla))
-data Casilla = Blue | Yellow | Empty deriving (Eq)
-
-
--- EL primer int indica la fila de la seccion, el segundo la columna de la seccion y el tercero el valor de la casilla posible
--- No existe una accion si no hay casilla posible
 data HijaraAction = NewAction Int Int Int deriving (Eq, Show)
 
-hLines sud = [Data.Vector.toList (getRow i sud) | i <- [1..nrows sud ]]
-
-vLines sud = [Data.Vector.toList (getCol i sud) | i <- [1..ncols sud ]]
-
-
-showHijaraPretty:: HijaraGame -> IO ()
-showHijaraPretty (NewHijara m) = putStr (concat [ x ++ "\n" ++ y ++ "\n\n" | (x,y) <- zip listFilasParesToString listFilasImparesToString ])
-  where
-    filas = hLines m
-    listFilasParesToString = [  (showLine True ((hLines ( x !! 0)) !! 0)) ++  "\t" ++ (showLine True ((hLines ( x !! 1)) !! 0)) ++  "\t" ++ (showLine True ((hLines ( x !! 2)) !! 0)) ++  "\t" ++ (showLine True ((hLines ( x !! 3)) !! 0)) | x <- filas ]
-    listFilasImparesToString = [ (showLine False ((hLines ( x !! 0)) !! 1)) ++  "\t" ++ (showLine False ((hLines ( x !! 1)) !! 1)) ++  "\t" ++ (showLine False ((hLines ( x !! 2)) !! 1)) ++  "\t" ++ (showLine False ((hLines ( x !! 3)) !! 1)) | x <- filas ]
-
-showLine :: Bool -> [Casilla] -> String
-showLine top line = "|" ++ value1 ++ " " ++ value2 ++ "|"
-  where
-    value1 = if ((line !! 0) == Empty) then (if top then "1" else "3") else show (line !! 0)
-    value2 = if ((line !! 1) == Empty) then (if top then "2" else "4") else show (line !! 1)
-
+data Casilla = Blue | Yellow | Empty deriving (Eq)
 instance Show Casilla where
   show (Yellow) = "y"
   show (Blue) = "b"
   show (Empty) = "x"
 
-
+--Crea un tablero de 4 X 4 secciones donde cada seccion tiene una casilla empty
 beginning :: HijaraGame
 beginning = NewHijara $ fromList 4 4 [fromList 2 2 [Empty | x <- [1..4]] | _ <- [1..16]]
 
-showGame :: HijaraGame -> String
-showGame (NewHijara matrix) = foldr1 (++) (map show (pasarALista primerasFilas ))
-    where
-      horizontalesDeTablero = hLines matrix
-      horizontalesDeMatriz = [(map hLines x) | x <- horizontalesDeTablero]
-      primerasFilas = [(((horizontalesDeMatriz !! y) !! x) !! z) | y <- [0..3], z <-[0..1], x <- [0..3] ]
 
-pasarALista :: [[Casilla]] -> [Casilla]
-pasarALista [] = []
-pasarALista lista = cabeza ++ (pasarALista cola)
-            where
-              cabeza = (foldr1 (++) (take 4 lista))
-              cola = (drop 4 lista)
-
-
-activePlayer :: HijaraGame -> HijaraPlayer
-activePlayer (NewHijara matrix) = if numeroB <= numeroY then (BluePlayer) else (YellowPlayer)
-                      where
-                        tablero = showGame (NewHijara matrix)
-                        numeroY = length (filter (\x -> x == 'y') tablero)
-                        numeroB = length (filter (\x -> x == 'b') tablero)
-
-
+--Devuelve una lista con las posibles jugadas que se pueden realizar según un estado de juego
 actions :: HijaraGame -> [(HijaraPlayer, [HijaraAction])]
 actions (NewHijara higa) = [(actPlayer, listaMovimientos), (noActPlayer, [])]
                         where
@@ -71,6 +59,8 @@ actions (NewHijara higa) = [(actPlayer, listaMovimientos), (noActPlayer, [])]
                           -- En la siguiente linea "x" va a iterar con cada fila, "y" solo indica el numero de la fila y "z" itera las columnas el numero de la columna
                           listaMovimientos = [ NewAction y z ((fromJust (elemIndex Empty (Data.Matrix.toList (x !! (z-1))))) + 1) | (x,y) <- zip filas [1..4], z <- [1..4], Empty `elem` (Data.Matrix.toList (x !! (z-1))) ]
 
+
+--Dado un tablero y una jugada la realiza de ser posible
 next :: HijaraGame -> (HijaraPlayer, HijaraAction) -> HijaraGame
 next (NewHijara hija) (player, NewAction fila columna valor)
   | player /= (activePlayer (NewHijara hija)) =  (error "El jugador no es el jugador activo")
@@ -87,9 +77,8 @@ next (NewHijara hija) (player, NewAction fila columna valor)
     casillaTres = (2,1)
     casillaCuatro = (2,2) --Se fija la coordenada de la casilla en la subMatriz
     casilla = if valor == 1 then casillaUno else if valor == 2 then casillaDos else if valor == 3 then casillaTres else casillaCuatro
-    nuevaSeccion = setElem  casillaDelJugador casilla seccion  --Crea la nueva seccion para ponerla en el tablero
-    -- oldListOfSeccion = Data.Matrix.toList (((hLines hija) !! fila) !! columna)
-    -- newSection = (fromList 2 2 [ if (valor == y) then casillaDelJugador else x | (x,y) <- zip oldListOfSeccion [1..]])
+    nuevaSeccion = setElem  casillaDelJugador casilla seccion
+
 
 result :: HijaraGame -> [(HijaraPlayer, Int)]
 result b 
@@ -97,7 +86,7 @@ result b
       |otherwise = []
       where
         p1 = fst ((score b) !! 0)
-        p2 = fst ((score b) !! 0)
+        p2 = fst ((score b) !! 1)
         scoreP1 = snd ((score b) !! 0)
         scoreP2 = snd ((score b) !! 1)
 
@@ -243,17 +232,45 @@ dividirDeAOcho string = cabeza ++ dividirDeAOcho cola
                     cola = drop 8 string
 
 
+--Devuelve un string con las filas del tablero en orden
+showGame :: HijaraGame -> String
+showGame (NewHijara matrix) = foldr1 (++) (map show (pasarALista primerasFilas ))
+    where
+      horizontalesDeTablero = hLines matrix
+      horizontalesDeMatriz = [(map hLines x) | x <- horizontalesDeTablero]
+      primerasFilas = [(((horizontalesDeMatriz !! y) !! x) !! z) | y <- [0..3], z <-[0..1], x <- [0..3] ]
+
+pasarALista :: [[Casilla]] -> [Casilla]
+pasarALista [] = []
+pasarALista lista = cabeza ++ (pasarALista cola)
+            where
+              cabeza = (foldr1 (++) (take 4 lista))
+              cola = (drop 4 lista)
+
+--Imprime el tablero en forma fácilmente legible
+showHijaraPretty:: HijaraGame -> IO ()
+showHijaraPretty (NewHijara m) = putStr (concat [ x ++ "\n" ++ y ++ "\n\n" | (x,y) <- zip listFilasParesToString listFilasImparesToString ])
+  where
+    filas = hLines m
+    listFilasParesToString = [  (showLine True ((hLines ( x !! 0)) !! 0)) ++  "\t" ++ (showLine True ((hLines ( x !! 1)) !! 0)) ++  "\t" ++ (showLine True ((hLines ( x !! 2)) !! 0)) ++  "\t" ++ (showLine True ((hLines ( x !! 3)) !! 0)) | x <- filas ]
+    listFilasImparesToString = [ (showLine False ((hLines ( x !! 0)) !! 1)) ++  "\t" ++ (showLine False ((hLines ( x !! 1)) !! 1)) ++  "\t" ++ (showLine False ((hLines ( x !! 2)) !! 1)) ++  "\t" ++ (showLine False ((hLines ( x !! 3)) !! 1)) | x <- filas ]
+
+showLine :: Bool -> [Casilla] -> String
+showLine top line = "|" ++ value1 ++ " " ++ value2 ++ "|"
+  where
+    value1 = if ((line !! 0) == Empty) then (if top then "1" else "3") else show (line !! 0)
+    value2 = if ((line !! 1) == Empty) then (if top then "2" else "4") else show (line !! 1)
+
+
 showAction :: HijaraAction -> String
 showAction a = show a --TODO
-
+   
 readAction :: String -> HijaraAction
 readAction a
         |length intList == 3 = NewAction (intList !! 0) (intList !! 1) (intList !! 2)
         |otherwise = error "El valor ingresado no es correcto"
         where
           intList = map (parseInt) (finalSplit ' ' a)
-
-
 
 isFinished :: HijaraGame -> Bool
 isFinished a = (p1 == []) && (p2 == [])
@@ -278,4 +295,69 @@ parseInt cadena = foldr1 (+) (getIntList cadena)
 
 getIntList :: String -> [Int]
 getIntList [] = []
-getIntList (x:xs) = ((digitToInt x)*(10^(length xs))) : (getIntList xs)        
+getIntList (x:xs) = ((digitToInt x)*(10^(length xs))) : (getIntList xs)
+
+activePlayer :: HijaraGame -> HijaraPlayer
+activePlayer (NewHijara matrix) = if numeroB <= numeroY then (BluePlayer) else (YellowPlayer)
+                      where
+                        tablero = showGame (NewHijara matrix)
+                        numeroY = length (filter (\x -> x == 'y') tablero)
+                        numeroB = length (filter (\x -> x == 'b') tablero)
+
+players :: [HijaraPlayer]
+players = [BluePlayerm,YellowPlayer]
+
+{-- Match controller -------------------------------------------------------------------------------
+
+Código de prueba. Incluye una función para correr las partidas y dos agentes: consola y aleatorio.
+
+-}
+type HijaraAgent = HijaraGame -> IO (Maybe HijaraAction)
+
+{- La función ´runMatch´ corre la partida completa a partir del estado de juego dado, usando los dos 
+agentes dados. Retorna una tupla con los puntajes (score) finales del juego.
+-}
+runMatch :: (HijaraAgent, HijaraAgent) -> HijaraGame -> IO [(HijaraPlayer, Int)]
+runMatch ags@(ag1, ag2) g = do
+   putStrLn (showHijaraPretty g)
+   case (activePlayer g) of
+      Nothing -> return $ result g
+      Just p -> do
+         let ag = [ag1, ag2] !! (fromJust $ elemIndex p players)
+         move <- ag g
+         runMatch ags (Hijara.next g (p, fromJust move))
+
+{- La función ´runOnConsole´ ejecuta toda la partida a partir del estado inicial usando dos agentes
+de consola.
+-}
+runOnConsole :: IO [(HijaraPlayer, Int)]
+runOnConsole = do
+   runMatch (consoleAgent BluePlayer, consoleAgent YellowPlayer) beginning
+
+{- El agente de consola ´consoleAgent´ muestra el estado de juego y los movimientos disponibles por
+consola, y espera una acción por entrada de texto.
+-}
+consoleAgent :: HijaraPlayer -> HijaraAgent
+consoleAgent player state = do
+   let moves = fromJust $ lookup player (actions state)
+   if null moves then do
+      putStrLn "No moves!"
+      getLine
+      return Nothing
+   else do
+      putStrLn ("Select one move:" ++ concat [" "++ show m | m <- moves])
+      line <- getLine
+      let input = readAction line
+      if elem input moves then return (Just input) else do 
+         putStrLn "Invalid move!"
+         consoleAgent player state
+
+randomAgent :: HijaraPlayer -> HijaraAgent
+randomAgent player state = do
+    let moves = fromJust $ lookup player (actions state)
+    if null moves then do
+       putStrLn "No moves!"
+       return Nothing
+    else do
+       i <- randomRIO (0, (length moves) - 1)
+       return (Just (moves !! i))
