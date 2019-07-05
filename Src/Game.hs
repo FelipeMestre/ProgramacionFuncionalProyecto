@@ -7,8 +7,7 @@ import Data.Maybe
 import HijaraTypes
 import Conversion
 import AuxFuncScoreHijara
-import PrettyPrintHijara
-      
+
 showGame :: HijaraGame -> String
 showGame (NewHijara matrix) = foldr1 (++) (map show (pasarALista primerasFilas ))
     where

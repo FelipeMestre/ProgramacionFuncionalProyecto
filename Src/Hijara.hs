@@ -34,6 +34,7 @@ import HijaraTypes
 import Conversion
 import AuxFuncScoreHijara
 import Game
+import PrettyPrint
 
 {-- Match controller -------------------------------------------------------------------------------
 

@@ -2,8 +2,7 @@
 
 build:
 	ghc --make ./src/*
-run:
-	cd ./src/
-	ghci -i ./src/Hijara.hs
+run: src/
+	ghc -c -dynamic ./src/Hijara.hs
 buildAndRun:
 	ll
