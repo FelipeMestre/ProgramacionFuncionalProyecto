@@ -2,6 +2,7 @@ import Data.Matrix (Matrix, getCol, getRow, ncols, nrows, toList, toLists, fromL
 import Data.Vector (toList)
 import Data.List (sort, elemIndex)
 import Data.Maybe (fromJust)
+import Data.Char
 data HijaraPlayer = BluePlayer | YellowPlayer deriving (Eq, Show, Enum)
 data HijaraGame = NewHijara (Matrix (Matrix Casilla))
 data Casilla = Blue | Yellow | Empty deriving (Eq)
@@ -109,7 +110,12 @@ showAction :: HijaraAction -> String
 showAction a = show a --TODO
 
 readAction :: String -> HijaraAction
-readAction a = NewAction 3 3 3 --TODO
+readAction a
+        |length intList == 3 = NewAction (intList !! 0) (intList !! 1) (intList !! 2)
+        |otherwise = error "El valor ingresado no es correcto"
+        where
+          intList = map (parseInt) (finalSplit ' ' a)
+
 
 players :: [HijaraPlayer]
 players = [] --TODO
@@ -119,3 +125,22 @@ isFinished a = (p1 == []) && (p2 == [])
   where 
     p1 = snd ((actions a) !! 0)
     p2 = snd ((actions a) !! 1)
+
+stringSplit :: Char -> String -> [String]
+stringSplit _ "" = [""]
+stringSplit ch (x:xs)
+      | x == ch = "" : cola
+      | otherwise = (x : head cola) : tail cola
+      where
+        cola = stringSplit ch xs
+
+finalSplit :: Char -> String -> [String]
+finalSplit ch st = filter (/="") (stringSplit ch st) 
+
+parseInt :: String -> Int
+parseInt "" = error "error!"
+parseInt cadena = foldr1 (+) (getIntList cadena)
+
+getIntList :: String -> [Int]
+getIntList [] = []
+getIntList (x:xs) = ((digitToInt x)*(10^(length xs))) : (getIntList xs)        
