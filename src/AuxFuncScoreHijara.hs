@@ -3,6 +3,7 @@ module AuxFuncScoreHijara
 import HijaraTypes
 import Conversion
 import Data.Matrix (Matrix, getElem)
+
 --Recorre la lista de todas las secciones, si hay una que tiene todas las fichas como las del jugador cuenta 20 puntos
 contarDeAVeinteJugador :: Casilla -> HijaraGame -> Int
 contarDeAVeinteJugador jugador (NewHijara matrix) = contarVeintePuntos seccionesConCuatroFichas
@@ -22,14 +23,15 @@ contarVeintePuntos (x:xs) = if x then 20 + contarVeintePuntos xs else 0 + contar
 
 --Cuenta los puntos de a diez de un jugador en concreto, para eso se tienen todas las lineas del tablero y el caracter del jugador
 contarDeADiezJugador :: Char -> HijaraGame -> Int
-contarDeADiezJugador jugador (NewHijara matrix) = contarDiezPuntos (map (piezasEnElMismoNumero (jugador)) horizontalesTablero) +
-                                          contarDiezPuntos (map (piezasEnElMismoNumero (jugador)) verticalesTablero) +
-                                          contarDiezPuntos [(piezasEnElMismoNumero jugador (diagonalesTableroDerIzq !! 0) )]  +
-                                          contarDiezPuntos [(piezasEnElMismoNumero jugador (diagonalesTableroDerIzq !! 1) )]  +
-                                          contarDiezPuntos [(piezasEnElMismoNumero jugador (diagonalesTableroDerIzq !! 2) )]  +
-                                          contarDiezPuntos [(piezasEnElMismoNumero jugador (diagonalesTableroIzqDer !! 0) )] +
-                                          contarDiezPuntos [(piezasEnElMismoNumero jugador (diagonalesTableroIzqDer !! 1) )] +
-                                          contarDiezPuntos [(piezasEnElMismoNumero jugador (diagonalesTableroIzqDer !! 2) )]
+contarDeADiezJugador jugador (NewHijara matrix) =
+                                           contarDiezPuntos (map (piezasEnElMismoNumero (jugador)) horizontalesTablero) +
+                                           contarDiezPuntos (map (piezasEnElMismoNumero (jugador)) verticalesTablero) +
+                                           contarDiezPuntos [(piezasEnElMismoNumero jugador (diagonalesTableroDerIzq !! 0) )] +
+                                           contarDiezPuntos [(piezasEnElMismoNumeroDiagonalPequeña jugador (diagonalesTableroDerIzq !! 1))] +
+                                           contarDiezPuntos [(piezasEnElMismoNumeroDiagonalPequeña jugador (diagonalesTableroDerIzq !! 2))] +
+                                           contarDiezPuntos [(piezasEnElMismoNumero jugador (diagonalesTableroIzqDer !! 0) )] +
+                                           contarDiezPuntos [(piezasEnElMismoNumeroDiagonalPequeña jugador (diagonalesTableroIzqDer !! 1) )] +
+                                           contarDiezPuntos [(piezasEnElMismoNumeroDiagonalPequeña jugador (diagonalesTableroIzqDer !! 2) )]
 
                                           where
                                              horizontalesTablero = dividirDeAOcho (matrixToString matrix)
@@ -49,8 +51,8 @@ piezasEnElMismoNumero player cadena = all (player ==) pares || all (player == ) 
                                       impares = [cadena !! x | x <- [1,3,5,7]]
 
 --Se usa para las diagonales pequeñas porque solo tienen 4 char
-piezasEnElMismoNumeroDiagonalPequeña :: String -> Char -> Bool 
-piezasEnElMismoNumeroDiagonalPequeña cadena player = all (player ==) cadena
+piezasEnElMismoNumeroDiagonalPequeña :: Char -> String -> Bool 
+piezasEnElMismoNumeroDiagonalPequeña player cadena = all (player ==) cadena
 
 
 

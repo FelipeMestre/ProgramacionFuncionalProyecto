@@ -72,24 +72,24 @@ next (NewHijara hija) (player, NewAction fila columna valor)
 
 result :: HijaraGame -> [(HijaraPlayer, Int)]
 result b 
-      |isFinished b = if scoreP1 > scoreP2 then [(p1,1),(p2,-1)] else if scoreP1 < scoreP2 then [(p1,-1),(p2,1)] else []
-      |otherwise = []
-      where
-        p1 = fst ((score b) !! 0)
-        p2 = fst ((score b) !! 0)
-        scoreP1 = snd ((score b) !! 0)
-        scoreP2 = snd ((score b) !! 1)
+        |isFinished b = if scoreP1 > scoreP2 then [(p1,1),(p2,-1)] else if scoreP1 < scoreP2 then [(p1,-1),(p2,1)] else if scoreP1 == scoreP2 then [(p1,0),(p2,0)] else []
+        |otherwise = []
+         where
+           p1 = fst ((score b) !! 0)
+           p2 = fst ((score b) !! 1)
+           scoreP1 = snd ((score b) !! 0)
+           scoreP2 = snd ((score b) !! 1)
 
 score :: HijaraGame -> [(HijaraPlayer, Int)]
-score (NewHijara matrix) = [(BluePlayer,diezPuntosAzul+quincePuntosAzul+veintePuntosAzul),
-                        (YellowPlayer,diezPuntosAmarillo+quincePuntosAmarillo+veintePuntosAmarillo)]
-                        where
-                          diezPuntosAmarillo = contarDeADiezJugador 'y' (NewHijara matrix)
-                          quincePuntosAmarillo = contarDeAQuinceJugador Yellow (NewHijara matrix)
-                          veintePuntosAmarillo = contarDeAVeinteJugador Yellow (NewHijara matrix)
-                          diezPuntosAzul = contarDeADiezJugador 'b' (NewHijara matrix)
-                          quincePuntosAzul = contarDeAQuinceJugador Blue (NewHijara matrix)
-                          veintePuntosAzul = contarDeAVeinteJugador Blue (NewHijara matrix)
+score (NewHijara matrix) = [(BluePlayer,quincePuntosAzul+veintePuntosAzul+diezPuntosAzul),
+                            (YellowPlayer,quincePuntosAmarillo+veintePuntosAmarillo+diezPuntosAmarillo)]
+                            where
+                              diezPuntosAmarillo = contarDeADiezJugador 'y' (NewHijara matrix)
+                              quincePuntosAmarillo = contarDeAQuinceJugador Yellow (NewHijara matrix)
+                              veintePuntosAmarillo = contarDeAVeinteJugador Yellow (NewHijara matrix)
+                              diezPuntosAzul = contarDeADiezJugador 'b' (NewHijara matrix)
+                              quincePuntosAzul = contarDeAQuinceJugador Blue (NewHijara matrix)
+                              veintePuntosAzul = contarDeAVeinteJugador Blue (NewHijara matrix)
 
 showAction :: HijaraAction -> String
 showAction (NewAction r c  v) = "Se ingreso una ficha en la seccion de la fila" ++ (show r) ++ " columna " ++ (show c) ++ "en el numero " ++ (show (v +1))

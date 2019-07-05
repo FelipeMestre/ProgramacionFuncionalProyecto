@@ -1,0 +1,1 @@
+Los errores que aparecen en el  readMe fueron arreglados

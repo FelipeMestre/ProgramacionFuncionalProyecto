@@ -48,7 +48,7 @@ agentes dados. Retorna una tupla con los puntajes (score) finales del juego.
 -}
 runMatch :: (HijaraAgent, HijaraAgent) -> HijaraGame -> IO [(HijaraPlayer, Int)]
 runMatch ags@(ag1, ag2) g = do
-   putStrLn (showBoard g)
+   putStrLn (showGame g)
    case (activePlayerMay g) of
       Nothing -> return $ result g
       Just p -> do
@@ -90,3 +90,4 @@ randomAgent player state = do
     else do
        i <- randomRIO (0, (length moves) - 1)
        return (Just (moves !! i))
+ 
