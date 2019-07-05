@@ -1,12 +1,14 @@
+
+module Game 
+    where
 import Data.Matrix (Matrix, toList, toLists, fromLists, fromList, submatrix, getElem, setElem)
 import Data.List (sort, elemIndex)
 import Data.Maybe
 import HijaraTypes
 import Conversion
 import AuxFuncScoreHijara
--- import PrettyPrintHijara
-
-
+import PrettyPrintHijara
+      
 showGame :: HijaraGame -> String
 showGame (NewHijara matrix) = foldr1 (++) (map show (pasarALista primerasFilas ))
     where

@@ -33,7 +33,7 @@ a los módulos necesarios.
 import HijaraTypes
 import Conversion
 import AuxFuncScoreHijara
-import Main
+import Game
 
 {-- Match controller -------------------------------------------------------------------------------
 
