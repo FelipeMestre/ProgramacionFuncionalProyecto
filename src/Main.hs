@@ -1,26 +1,11 @@
 import Data.Matrix (Matrix, toList, toLists, fromLists, fromList, submatrix, getElem, setElem)
 import Data.List (sort, elemIndex)
-import Data.Maybe (fromJust)
+import Data.Maybe
 import HijaraTypes
 import Conversion
-import PrettyPrintHijara
+import AuxFuncScoreHijara
+-- import PrettyPrintHijara
 
-
-PrettyPrintHijara:: HijaraGame -> IO()
-showHijaraPretty (NewHijara m) = putStr (concat [ x ++ "\n" ++ y ++ "\n\n" | (x,y) <- zip listFilasParesToString listFilasImparesToString ])
-  where
-    filas = hLines m
-    listFilasParesToString = [  (showLine True ((hLines ( x !! 0)) !! 0)) ++  "\t" ++ (showLine True ((hLines ( x !! 1)) !! 0)) ++  "\t" ++ (showLine True ((hLines ( x !! 2)) !! 0)) ++  "\t" ++ (showLine True ((hLines ( x !! 3)) !! 0)) | x <- filas ]
-    listFilasImparesToString = [ (showLine False ((hLines ( x !! 0)) !! 1)) ++  "\t" ++ (showLine False ((hLines ( x !! 1)) !! 1)) ++  "\t" ++ (showLine False ((hLines ( x !! 2)) !! 1)) ++  "\t" ++ (showLine False ((hLines ( x !! 3)) !! 1)) | x <- filas ]
-
-showLine :: Bool -> [Casilla] -> String
-showLine top line = "|" ++ value1 ++ " " ++ value2 ++ "|"
-  where
-    value1 = if ((line !! 0) == Empty) then (if top then "1" else "3") else show (line !! 0)
-    value2 = if ((line !! 1) == Empty) then (if top then "2" else "4") else show (line !! 1)
-
-beginning :: HijaraGame
-beginning = NewHijara $ fromList 4 4 [fromList 2 2 [Empty | x <- [1..4]] | _ <- [1..16]]
 
 showGame :: HijaraGame -> String
 showGame (NewHijara matrix) = foldr1 (++) (map show (pasarALista primerasFilas ))
@@ -29,6 +14,11 @@ showGame (NewHijara matrix) = foldr1 (++) (map show (pasarALista primerasFilas )
       horizontalesDeMatriz = [(map hLines x) | x <- horizontalesDeTablero]
       primerasFilas = [(((horizontalesDeMatriz !! y) !! x) !! z) | y <- [0..3], z <-[0..1], x <- [0..3] ]
 
+showBoard :: HijaraGame -> String
+showBoard (NewHijara matrix) = matrixToString matrix
+
+beginning :: HijaraGame
+beginning = NewHijara $ fromList 4 4 [fromList 2 2 [Empty | x <- [1..4]] | _ <- [1..16]]
 
 
 activePlayer :: HijaraGame -> HijaraPlayer
@@ -38,6 +28,17 @@ activePlayer (NewHijara matrix) = if numeroB <= numeroY then (BluePlayer) else (
                         numeroY = length (filter (\x -> x == 'y') tablero)
                         numeroB = length (filter (\x -> x == 'b') tablero)
 
+activePlayerMay :: HijaraGame -> Maybe HijaraPlayer
+activePlayerMay (NewHijara matrix) = if (isFinished (NewHijara matrix)) 
+                                then Nothing
+                                else 
+                                  if numeroB <= numeroY 
+                                    then (Just BluePlayer) 
+                                  else (Just YellowPlayer)
+  where
+    tablero = showGame (NewHijara matrix)
+    numeroY = length (filter (\x -> x == 'y') tablero)
+    numeroB = length (filter (\x -> x == 'b') tablero)
 
 actions :: HijaraGame -> [(HijaraPlayer, [HijaraAction])]
 actions (NewHijara higa) = [(actPlayer, listaMovimientos), (noActPlayer, [])]
@@ -90,7 +91,7 @@ score (NewHijara matrix) = [(BluePlayer,diezPuntosAzul+quincePuntosAzul+veintePu
                           veintePuntosAzul = contarDeAVeinteJugador Blue (NewHijara matrix)
 
 showAction :: HijaraAction -> String
-showAction a = show a --TODO
+showAction (NewAction r c  v) = "Se ingreso una ficha en la seccion de la fila" ++ (show r) ++ " columna " ++ (show c) ++ "en el numero " ++ (show (v +1))
 
 readAction :: String -> HijaraAction
 readAction a
@@ -99,7 +100,8 @@ readAction a
         where
           intList = map (parseInt) (finalSplit ' ' a)
 
-
+players :: [HijaraPlayer]
+players = [BluePlayer, YellowPlayer]
 
 isFinished :: HijaraGame -> Bool
 isFinished a = (p1 == []) && (p2 == [])

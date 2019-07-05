@@ -39,6 +39,20 @@ instance Show Casilla where
 beginning :: HijaraGame
 beginning = NewHijara $ fromList 4 4 [fromList 2 2 [Empty | x <- [1..4]] | _ <- [1..16]]
 
+showGame :: HijaraGame -> String
+showGame (NewHijara matrix) = foldr1 (++) (map show (pasarALista primerasFilas ))
+    where
+      horizontalesDeTablero = hLines matrix
+      horizontalesDeMatriz = [(map hLines x) | x <- horizontalesDeTablero]
+      primerasFilas = [(((horizontalesDeMatriz !! y) !! x) !! z) | y <- [0..3], z <-[0..1], x <- [0..3] ]
+
+pasarALista :: [[Casilla]] -> [Casilla]
+pasarALista [] = []
+pasarALista lista = cabeza ++ (pasarALista cola)
+            where
+              cabeza = (foldr1 (++) (take 4 lista))
+              cola = (drop 4 lista)
+
 
 activePlayer :: HijaraGame -> HijaraPlayer
 activePlayer (NewHijara matrix) = if numeroB <= numeroY then (BluePlayer) else (YellowPlayer)

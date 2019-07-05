@@ -3,7 +3,7 @@ module AuxFuncScoreHijara
 import HijaraTypes
 import Conversion
 import Data.Matrix (Matrix, getElem)
-    --Recorre la lista de todas las secciones, si hay una que tiene todas las fichas como las del jugador cuenta 20 puntos
+--Recorre la lista de todas las secciones, si hay una que tiene todas las fichas como las del jugador cuenta 20 puntos
 contarDeAVeinteJugador :: Casilla -> HijaraGame -> Int
 contarDeAVeinteJugador jugador (NewHijara matrix) = contarVeintePuntos seccionesConCuatroFichas
                         where
@@ -32,7 +32,7 @@ contarDeADiezJugador jugador (NewHijara matrix) = contarDiezPuntos (map (piezasE
                                           contarDiezPuntos [(piezasEnElMismoNumero jugador (diagonalesTableroIzqDer !! 2) )]
 
                                           where
-                                             horizontalesTablero = dividirDeAOcho (showGame (NewHijara matrix))
+                                             horizontalesTablero = dividirDeAOcho (matrixToString matrix)
                                              verticalesTablero = verticalesDelTablero (NewHijara matrix)
                                              diagonalesTableroIzqDer = diagonalesDelTablero (NewHijara matrix) 1
                                              diagonalesTableroDerIzq = diagonalesDelTablero (NewHijara matrix) 4
@@ -97,9 +97,7 @@ diagonalesDelTablero (NewHijara matrix) comienzo
                           where
                             diagonales = if comienzo == 1 then [getElem x x matrix | x <- [1..4]] else if comienzo == 4 
                               then [getElem x y matrix | (x,y) <- zip [1..4] (reverse [1..4])] else error ("Ingrese un comienzo valido")
-                             
-                             
-                             
+
 --Devuelve un string con las casillas de una lista de matrices que esten en la misma posicion en cada una.
 --Sirve para diagonales pequeñas porque se toma un solo elemento por matriz
 diagonalPequeñaDeMatrices :: [Matrix Casilla] -> Int -> Int -> String
@@ -121,7 +119,6 @@ verticalesDelTablero (NewHijara matrix) = dividirDeAOcho (foldr1 (++) columnasEn
                             --Recorre el tablero en columnas como si los cuadrantes no existieran
                             primerasColumnas = [(((verticalesDeMatriz !! y) !! x) !! z) | y <- [0..3], z <-[0..1], x <- [0..3]] 
                             columnasEnString = map show (pasarALista primerasColumnas)
-
 
 -- Divide en ocho un string, se usa para obtener lista de columnas y filas en string
 dividirDeAOcho :: String -> [String]

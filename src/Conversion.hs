@@ -36,3 +36,10 @@ parseInt cadena = foldr1 (+) (getIntList cadena)
 getIntList :: String -> [Int]
 getIntList [] = []
 getIntList (x:xs) = ((digitToInt x)*(10^(length xs))) : (getIntList xs)
+
+matrixToString :: Matrix (Matrix Casilla) -> [Char]
+matrixToString matrix= foldr1 (++) (map show (pasarALista primerasFilas ))
+  where
+    horizontalesDeTablero = hLines matrix
+    horizontalesDeMatriz = [(map hLines x) | x <- horizontalesDeTablero]
+    primerasFilas = [(((horizontalesDeMatriz !! y) !! x) !! z) | y <- [0..3], z <-[0..1], x <- [0..3] ]

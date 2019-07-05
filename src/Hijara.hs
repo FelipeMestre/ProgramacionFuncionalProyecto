@@ -11,7 +11,7 @@ module Hijara where
 
 import Data.Maybe (fromJust, listToMaybe)
 import Data.List (elemIndex)
-import System.Random
+import System.Random (randomRIO)
 
 {- Es posible que el paquete System.Random no esté disponible si se instaló el core de la Haskell 
 Platform en el sistema. Para instalarlo, ejecutar los siguientes comandos:
@@ -30,36 +30,10 @@ Funciones de marca sin ninguna implementación útil. Reemplazar por el código 
 a los módulos necesarios.
 -}
 
-data HijaraPlayer = BluePlayer | YellowPlayer deriving (Eq, Show, Enum, Bounded)
-data HijaraGame = HijaraGame Bool deriving (Eq, Show) --TODO
-data HijaraAction = HijaraAction deriving (Eq, Show, Read) --TODO
-
-beginning :: HijaraGame
-beginning = HijaraGame False --TODO
-
-actions :: HijaraGame -> [(HijaraPlayer, [HijaraAction])]
-actions (HijaraGame f) = zip players [if f then [] else [HijaraAction], []] --TODO
-
-next :: HijaraGame -> (HijaraPlayer, HijaraAction) -> HijaraGame
-next _ _ = HijaraGame True --TODO
-
-result :: HijaraGame -> [(HijaraPlayer, Int)]
-result (HijaraGame f) = zip players (if f then [] else [1, -1]) --TODO
-
-showBoard :: HijaraGame -> String
-showBoard g = show g --TODO
-
-showAction :: HijaraAction -> String
-showAction a = show a --TODO
-   
-readAction :: String -> HijaraAction
-readAction = read --TODO
-
-activePlayer :: HijaraGame -> Maybe HijaraPlayer
-activePlayer g = listToMaybe [p | (p, as) <- actions g, not (null as)]
-
-players :: [HijaraPlayer]
-players = [minBound..maxBound]
+import HijaraTypes
+import Conversion
+import AuxFuncScoreHijara
+import Main
 
 {-- Match controller -------------------------------------------------------------------------------
 
@@ -74,12 +48,12 @@ agentes dados. Retorna una tupla con los puntajes (score) finales del juego.
 runMatch :: (HijaraAgent, HijaraAgent) -> HijaraGame -> IO [(HijaraPlayer, Int)]
 runMatch ags@(ag1, ag2) g = do
    putStrLn (showBoard g)
-   case (activePlayer g) of
+   case (activePlayerMay g) of
       Nothing -> return $ result g
       Just p -> do
          let ag = [ag1, ag2] !! (fromJust $ elemIndex p players)
          move <- ag g
-         runMatch ags (Hijara.next g (p, fromJust move))
+         runMatch ags (next g (p, fromJust move))
 
 {- La función ´runOnConsole´ ejecuta toda la partida a partir del estado inicial usando dos agentes
 de consola.
